@@ -827,7 +827,7 @@
       <p class="key-lead">무료 Gemini API 키를 한 번만 넣어 두면, 어떤 책 주제든 AI가 소미에게 맞는 놀이 3가지를 만들어 줘요.</p>
 
       <label class="par-note" for="playKeyInput">Gemini API 키</label>
-      <input id="playKeyInput" class="setup-input" type="password" autocomplete="off" spellcheck="false" placeholder="AIza... 로 시작하는 키를 붙여 넣어요" />
+      <input id="playKeyInput" class="setup-input" type="password" autocomplete="off" spellcheck="false" placeholder="AQ. 또는 AIza... 로 시작하는 키를 붙여 넣어요" />
       <div class="key-btns">
         <button class="done-btn" id="playKeySave" type="button">저장하기</button>
         <button class="done-btn ghost hidden" id="playKeyClear" type="button">키 지우기</button>
@@ -839,7 +839,7 @@
         <ol class="key-steps">
           <li><span class="key-num">1</span><div><b>Google AI Studio</b>에 접속해 구글 계정으로 로그인해요.<br /><a class="key-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">aistudio.google.com/apikey 바로 열기 ↗</a></div></li>
           <li><span class="key-num">2</span><div><b>Create API key</b>(API 키 만들기) 버튼을 눌러 새 키를 만들어요. 프로젝트를 고르라고 하면 새 프로젝트를 골라도 돼요.</div></li>
-          <li><span class="key-num">3</span><div>만들어진 <code class="key-code">AIza...</code>로 시작하는 키를 복사해, 위 칸에 붙여 넣고 <b>저장하기</b>를 눌러요.</div></li>
+          <li><span class="key-num">3</span><div>만들어진 <code class="key-code">AQ.</code>(또는 <code class="key-code">AIza...</code>)로 시작하는 키를 복사해, 위 칸에 붙여 넣고 <b>저장하기</b>를 눌러요.<br />요즘은 <b>AQ.</b>로 시작하는 새 형식 키가 나와요. 예전에 만든 키는 <b>AIza...</b>인데, 어느 쪽이든 그대로 붙여 넣으면 돼요.</div></li>
         </ol>
         <p class="key-fine">무료 등급으로도 집에서 아이와 쓰기 충분해요. 키는 이 기기 브라우저에만 저장되고, 어떤 링크·파일에도 담기지 않아요. 다른 기기에서는 그 기기에서 한 번만 다시 넣으면 돼요.</p>
       </details>
@@ -3742,7 +3742,7 @@
       const inp = byId("playKeyInput");
       const val = String(inp ? inp.value : "").trim();
       if (!val) { toast("AI 키를 붙여 넣어 주세요 🙂"); if (inp) inp.focus(); return false; }
-      if (val.length < 20 || /\s/.test(val)) { toast("키가 조금 이상해요. 'AIza'로 시작하는 긴 키를 그대로 붙여 넣어 주세요"); return false; }
+      if (val.length < 20 || /\s/.test(val)) { toast("키가 조금 이상해요. 'AQ.' 또는 'AIza'로 시작하는 긴 키를 그대로 붙여 넣어 주세요"); return false; }
       if (!storePlayKey(val)) { toast("브라우저 저장이 막혀 있어 키를 저장하지 못했어요"); return false; }
       if (inp) inp.value = "";
       renderPlayKeyPanel(); renderPlays();
