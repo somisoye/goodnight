@@ -1775,6 +1775,47 @@
         });
       } catch (e) {}
     }
+    /* ✨ 뾰로롱 — 3·4·5번(별·퍼즐 조각·메달·미션)의 음성 대신 쓰는 반짝이는 아르페지오
+       낮게 시작해 위로 살짝 미끄러지는 세 음(큰 축하엔 다섯 음) + 한 옥타브 위 사인 윤기.
+       state.sound 가 꺼져 있으면 아무 소리도 내지 않는다. */
+    function sparkleChime(big) {
+      if (!state.sound) return false;
+      const ctx = getAudioCtx();
+      if (!ctx) return false;
+      try {
+        const t0 = ctx.currentTime + 0.01;
+        const notes = big ? [1046.5, 1318.5, 1568.0, 2093.0, 2637.0] : [1174.7, 1568.0, 2349.3];
+        const gap = big ? 0.08 : 0.055;
+        const tail = big ? 0.62 : 0.38;
+        notes.forEach(function (f, i) {
+          const at = t0 + i * gap;
+          const o = ctx.createOscillator(), g = ctx.createGain();
+          o.type = "triangle";
+          try {
+            o.frequency.setValueAtTime(f * 0.74, at);                 // 살짝 낮게 시작해
+            if (o.frequency.exponentialRampToValueAtTime) {
+              o.frequency.exponentialRampToValueAtTime(f * 1.06, at + 0.09);   // 위로 미끄러지며 뾰로롱~
+            } else {
+              o.frequency.setValueAtTime(f * 1.06, at + 0.09);
+            }
+          } catch (e) { try { o.frequency.value = f; } catch (e2) {} }
+          g.gain.setValueAtTime(0.0001, at);
+          g.gain.exponentialRampToValueAtTime(big ? 0.26 : 0.20, at + 0.012);
+          g.gain.exponentialRampToValueAtTime(0.0001, at + tail);
+          o.connect(g); g.connect(ctx.destination);
+          o.start(at); o.stop(at + tail + 0.02);
+          const o2 = ctx.createOscillator(), g2 = ctx.createGain();    // 반짝이는 윤기
+          o2.type = "sine";
+          try { o2.frequency.setValueAtTime(f * 2, at); } catch (e) { try { o2.frequency.value = f * 2; } catch (e2) {} }
+          g2.gain.setValueAtTime(0.0001, at);
+          g2.gain.exponentialRampToValueAtTime(0.075, at + 0.01);
+          g2.gain.exponentialRampToValueAtTime(0.0001, at + tail * 0.55);
+          o2.connect(g2); g2.connect(ctx.destination);
+          o2.start(at); o2.stop(at + tail * 0.6);
+        });
+        return true;
+      } catch (e) { return false; }
+    }
     function confetti() {
       const c = document.getElementById("confetti-canvas"), ctx = c.getContext("2d");
       c.width = innerWidth; c.height = innerHeight;
@@ -2061,7 +2102,7 @@
       state.tiles[idx] = !state.tiles[idx]; save(); render();
       if (!state.tiles[idx]) return;
       if (allTiles()) { completePuzzle(); return; }
-      chime(false);
+      sparkleChime(false);
     }
 
     function onStepClick(id) {
@@ -2127,7 +2168,7 @@
         }
       }
       save(); render();
-      chime(true); confetti();
+      sparkleChime(true); confetti();
       const nm = currentDesign().name;
       toast(!earned ? "⭐ 오늘 저녁루틴 성공!"
         : (state.reward === "sticker"
@@ -2511,7 +2552,7 @@
       if (!designIsDone(d.id)) state.completedDesigns.push(d.id);
       const coupon = issueCoupon(d);
       save(); render();
-      chime(true); confetti();
+      sparkleChime(true); confetti();
       queueModal(function () { showPuzzleDone(coupon, d); });
       return coupon;
     }
@@ -2957,7 +2998,7 @@
       if (next === cur) return cur;
       if (next) state.books[k] = next; else delete state.books[k];
       save(); render();
-      if (delta > 0) { chime(false); checkMedals(); }
+      if (delta > 0) { sparkleChime(false); checkMedals(); }
       return next;
     }
     function checkMedals() {
@@ -2976,7 +3017,7 @@
       }
       if (!got.length) return false;
       save(); render();
-      chime(true); confetti();
+      sparkleChime(true); confetti();
       got.forEach(function (m) { queueModal(function () { showMedal(m, total); }); });
       return true;
     }
@@ -3347,7 +3388,7 @@
       renderPlays(true);
       const box = byId("playResults");
       if (box) { try { box.scrollIntoView({ block: "center" }); } catch (e) {} }
-      chime(true);
+      sparkleChime(true);
       toast(mode === "ai"
         ? "🪄 AI가 놀이 3가지를 만들어 줬어요!"
         : (pack ? `📚 '${pack}' 기본 추천이에요` : "📚 기본 추천 놀이 3가지예요"));
@@ -3680,7 +3721,7 @@
       row.mission = { title: p.title, emoji: p.emoji || "🪄", topic: row.topic, done: false, rewarded: false };
       save();
       renderPlays();
-      chime(false);
+      sparkleChime(false);
       toast(`⭐ 오늘 놀이 미션으로 정했어요: ${p.title}`);
       const box = byId("playMission");
       if (box) { try { box.scrollIntoView({ block: "center" }); } catch (e) {} }
@@ -3700,8 +3741,7 @@
         row.mission.rewarded = true;
         const r = grantMissionReward();
         save(); render();
-        chime(true); confetti();
-        speak(tpl(`우와, ${row.mission.title} 놀이 잘했네! 정말 최고야!`));
+        sparkleChime(true); confetti();     // 음성 없이 '뾰로롱' 효과음만
         toast(r.text);
         afterMissionReward(r);
       } else { save(); render(); }
@@ -3820,7 +3860,7 @@
           save(); render();
           btn.disabled = false;
           taskEl.classList.remove("rolling");
-          chime(true);
+          sparkleChime(true);
           toast(`🎲 오늘의 랜덤데이: ${pick}!`);
         }
       }, 75);
@@ -3841,8 +3881,7 @@
         cur.rewarded = true;
         const r = grantMissionReward();
         save(); render();
-        chime(true); confetti();
-        speak(tpl(`우와, ${cur.task} 잘했네! 정말 최고야!`));
+        sparkleChime(true); confetti();     // 음성 없이 '뾰로롱' 효과음만
         toast(r.text);
         afterMissionReward(r);
       } else { save(); render(); }
